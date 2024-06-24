@@ -1,4 +1,4 @@
-import { Select, Grid, GridItem, Box, Flex, Text, VStack, Heading, Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react";
+import { Select, Grid, GridItem, Box, Flex, Text, VStack, Heading, Table, Thead, Tbody, Tr, Th, Td, Button } from "@chakra-ui/react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { useEffect, useState } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMinutes, startOfDay, addDays, startOfWeek, endOfWeek } from "date-fns";
@@ -52,8 +52,8 @@ const Calendar = () => {
       if (source.droppableId === 'jira-tickets' && destination.droppableId.startsWith('cell-')) {
         const items = Array.from(mockJiraTickets);
         const [movedItem] = items.splice(source.index, 1);
-        const [_, dayIndex] = destination.droppableId.split('-').slice(1).map(Number);
-        setUniqueEvents([...uniqueEvents, { ...movedItem, day: dayIndex, time: destination.index }]);
+        const [_, dayIndex, timeIndex] = destination.droppableId.split('-').map(Number);
+        setUniqueEvents([...uniqueEvents, { ...movedItem, day: dayIndex, time: timeIndex }]);
         setMockJiraTickets(items);
       } else if (source.droppableId.startsWith('cell-') && destination.droppableId === 'jira-tickets') {
         const items = Array.from(uniqueEvents);
@@ -62,6 +62,34 @@ const Calendar = () => {
         setUniqueEvents(items);
       }
     }
+  };
+
+  useEffect(() => {
+    const handleScroll = (e) => {
+      const { clientY } = e;
+      const edgeThreshold = 50; // px from the edge to start scrolling
+      const scrollSpeed = 10; // px per frame
+
+      if (clientY < edgeThreshold) {
+        window.scrollBy(0, -scrollSpeed);
+      } else if (clientY > window.innerHeight - edgeThreshold) {
+        window.scrollBy(0, scrollSpeed);
+      }
+    };
+
+    window.addEventListener('dragover', handleScroll);
+
+    return () => {
+      window.removeEventListener('dragover', handleScroll);
+    };
+  }, []);
+
+  const handlePreviousWeek = () => {
+    setCurrentWeek((prevWeek) => addDays(prevWeek, -7));
+  };
+
+  const handleNextWeek = () => {
+    setCurrentWeek((prevWeek) => addDays(prevWeek, 7));
   };
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -87,6 +115,10 @@ const Calendar = () => {
             <option key={i} value={currentMonth.getFullYear() - 5 + i}>{currentMonth.getFullYear() - 5 + i}</option>
           ))}
         </Select>
+      </Flex>
+      <Flex mb={4} justifyContent="space-between">
+        <Button onClick={handlePreviousWeek}>Previous Week</Button>
+        <Button onClick={handleNextWeek}>Next Week</Button>
       </Flex>
       <Grid templateColumns="3fr 1fr" gap={4}>
         <GridItem>
