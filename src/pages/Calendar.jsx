@@ -94,6 +94,7 @@ const Calendar = () => {
                                 </Box>
                               )}
                             </Droppable>
+                          </Td>
                         ))}
                       </Tr>
                     ))}
