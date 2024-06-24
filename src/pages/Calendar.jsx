@@ -31,10 +31,12 @@ const Calendar = () => {
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
   const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd });
 
-  const mockMeetings = [
-    { id: 'meeting-1', content: 'Team Meeting' },
-    { id: 'meeting-2', content: 'Client Call' },
-    { id: 'meeting-3', content: 'Project Discussion' },
+  const uniqueEvents = [
+    { id: 'event-1', content: 'Team Standup', day: 0, time: 10 }, // Monday at 10:00 AM
+    { id: 'event-2', content: 'Client Call', day: 1, time: 14 }, // Tuesday at 2:00 PM
+    { id: 'event-3', content: 'Project Meeting', day: 2, time: 16 }, // Wednesday at 4:00 PM
+    { id: 'event-4', content: 'Code Review', day: 3, time: 11 }, // Thursday at 11:00 AM
+    { id: 'event-5', content: 'Sprint Planning', day: 4, time: 9 }, // Friday at 9:00 AM
   ];
 
   const mockJiraTickets = [
@@ -81,15 +83,17 @@ const Calendar = () => {
                             <Droppable droppableId={`cell-${index}-${dayIndex}`}>
                               {(provided) => (
                                 <Box ref={provided.innerRef} {...provided.droppableProps} minHeight="50px" border="1px solid lightgray">
-                                  {mockMeetings.map((meeting, meetingIndex) => (
-                                    <Draggable key={meeting.id} draggableId={meeting.id} index={meetingIndex}>
-                                      {(provided) => (
-                                        <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} p={2} m={1} bg="teal.100" borderRadius="md">
-                                          {meeting.content}
-                                        </Box>
-                                      )}
-                                    </Draggable>
-                                  ))}
+                                  {uniqueEvents
+                                    .filter(event => event.day === dayIndex && event.time === index)
+                                    .map((event, eventIndex) => (
+                                      <Draggable key={event.id} draggableId={event.id} index={eventIndex}>
+                                        {(provided) => (
+                                          <Box ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} p={2} m={1} bg="teal.100" borderRadius="md">
+                                            {event.content}
+                                          </Box>
+                                        )}
+                                      </Draggable>
+                                    ))}
                                   {provided.placeholder}
                                 </Box>
                               )}
