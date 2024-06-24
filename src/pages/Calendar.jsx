@@ -8,6 +8,18 @@ const Calendar = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth.getMonth());
   const [selectedYear, setSelectedYear] = useState(currentMonth.getFullYear());
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [uniqueEvents, setUniqueEvents] = useState([
+    { id: 'event-1', content: 'Team Standup', day: 0, time: 10 }, // Monday at 10:00 AM
+    { id: 'event-2', content: 'Client Call', day: 1, time: 14 }, // Tuesday at 2:00 PM
+    { id: 'event-3', content: 'Project Meeting', day: 2, time: 16 }, // Wednesday at 4:00 PM
+    { id: 'event-4', content: 'Code Review', day: 3, time: 11 }, // Thursday at 11:00 AM
+    { id: 'event-5', content: 'Sprint Planning', day: 4, time: 9 }, // Friday at 9:00 AM
+  ]);
+  const [mockJiraTickets, setMockJiraTickets] = useState([
+    { id: 'ticket-1', content: 'JIRA-123: Fix login bug' },
+    { id: 'ticket-2', content: 'JIRA-456: Update user profile page' },
+    { id: 'ticket-3', content: 'JIRA-789: Implement new feature' },
+  ]);
 
   useEffect(() => {
     setCurrentMonth(new Date(selectedYear, selectedMonth));
@@ -19,7 +31,37 @@ const Calendar = () => {
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-    // Logic to handle drag and drop
+
+    const { source, destination } = result;
+
+    if (source.droppableId === destination.droppableId) {
+      // Reordering within the same list
+      if (source.droppableId === 'jira-tickets') {
+        const items = Array.from(mockJiraTickets);
+        const [reorderedItem] = items.splice(source.index, 1);
+        items.splice(destination.index, 0, reorderedItem);
+        setMockJiraTickets(items);
+      } else {
+        const items = Array.from(uniqueEvents);
+        const [reorderedItem] = items.splice(source.index, 1);
+        items.splice(destination.index, 0, reorderedItem);
+        setUniqueEvents(items);
+      }
+    } else {
+      // Moving between lists
+      if (source.droppableId === 'jira-tickets' && destination.droppableId.startsWith('cell-')) {
+        const items = Array.from(mockJiraTickets);
+        const [movedItem] = items.splice(source.index, 1);
+        const [_, dayIndex] = destination.droppableId.split('-').slice(1).map(Number);
+        setUniqueEvents([...uniqueEvents, { ...movedItem, day: dayIndex, time: destination.index }]);
+        setMockJiraTickets(items);
+      } else if (source.droppableId.startsWith('cell-') && destination.droppableId === 'jira-tickets') {
+        const items = Array.from(uniqueEvents);
+        const [movedItem] = items.splice(source.index, 1);
+        setMockJiraTickets([...mockJiraTickets, movedItem]);
+        setUniqueEvents(items);
+      }
+    }
   };
 
   const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -30,20 +72,6 @@ const Calendar = () => {
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 });
   const weekEnd = endOfWeek(currentWeek, { weekStartsOn: 1 });
   const daysInWeek = eachDayOfInterval({ start: weekStart, end: weekEnd });
-
-  const uniqueEvents = [
-    { id: 'event-1', content: 'Team Standup', day: 0, time: 10 }, // Monday at 10:00 AM
-    { id: 'event-2', content: 'Client Call', day: 1, time: 14 }, // Tuesday at 2:00 PM
-    { id: 'event-3', content: 'Project Meeting', day: 2, time: 16 }, // Wednesday at 4:00 PM
-    { id: 'event-4', content: 'Code Review', day: 3, time: 11 }, // Thursday at 11:00 AM
-    { id: 'event-5', content: 'Sprint Planning', day: 4, time: 9 }, // Friday at 9:00 AM
-  ];
-
-  const mockJiraTickets = [
-    { id: 'ticket-1', content: 'JIRA-123: Fix login bug' },
-    { id: 'ticket-2', content: 'JIRA-456: Update user profile page' },
-    { id: 'ticket-3', content: 'JIRA-789: Implement new feature' },
-  ];
 
   return (
     <Box p={4}>
